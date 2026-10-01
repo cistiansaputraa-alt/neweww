@@ -1,27 +1,25 @@
 {
-  "name": "𝙰𝙽𝙶𝙺𝙰𝚂𝙰",
-  "version": "2",
-  "description": "𝙱𝙾𝚃 𝙰𝙿𝙺 𝙱𝚄𝙶 𝙿𝙾𝚆𝙴𝚁𝙴𝙳 𝙰𝙽𝙶𝙺𝙰𝚂𝙰",
-  "main": "angkasa.js",
+  "name": "rafael-bot",
+  "version": "1.0.0",
+  "description": "Rafael Bot - Base Fixed",
+  "main": "rafael.js",
   "scripts": {
-    "start": "node angkasa.js"
+    "start": "node rafael.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   },
   "dependencies": {
+    "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "github:tenka-san/WaBails",
     "archiver": "^7.0.1",
-    "axios": "^1.5.0",
-    "canvas": "^3.2.0",
+    "axios": "^1.7.7",
+    "canvas": "^2.11.2",
     "chalk": "^4.1.2",
-    "cors": "^2.8.5",
     "cookie-parser": "^1.4.6",
-    "express": "^4.18.2",
-    "firebase-admin": "^13.5.0",
-    "form-data": "^4.0.4",
-    "jimp": "^0.16.0",
-    "grammy": "^1.38.2",
-    "moment-timezone": "^0.6.0",
-    "node-fetch": "^3.3.2",
-    "os": "^0.1.2",
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "form-data": "^4.0.1",
     "pino": "^9.5.0",
     "telegraf": "^4.16.3"
   }
