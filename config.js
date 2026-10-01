@@ -6,7 +6,7 @@ module.exports = {
     telegramBotToken: "8614396804:AAFkDxGdq1PtBQ4y7Yk-lg5SNC6zVEzFQQ0",
     sessionName: "session",
     portVps: "33236",
-    ipVps: "http://152.55.177.209:1314",
+    ipVps: "http://localhost:1314",
     message: {
         owner: `🚫 Khusus Owner Jangan Spam!`,
         wait: `⏳ Otw Tunggu Sebentar...`,
