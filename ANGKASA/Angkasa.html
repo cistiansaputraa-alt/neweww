@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Angkasa - Web Panel</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --neon1:#a9f1df;
+      --neon2:#00a8cc;
+      --panel:rgba(15,15,20,0.9);
+      --text:#d1d9e6;
+      --bg:#000814;
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html, body {
+      min-height: 100%;
+      height: auto;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+    body{
+      font-family:'Poppins',sans-serif;
+      background:linear-gradient(135deg,#000000,#0a0a0a,#0d1b2a);
+      color:var(--text);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:flex-start;
+      padding:40px 20px 140px; /* extra bottom spacing for nav */
+      text-align:center;
+      position:relative;
+      overflow-x: hidden;
+      overflow-y: auto;;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;inset:0;
+      background:
+        linear-gradient(rgba(173,216,230,0.07) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(173,216,230,0.07) 1px,transparent 1px);
+      background-size:30px 30px;
+      z-index:0;
+    }
+    .neon-border{
+      position:fixed;
+      inset:0;
+      border:2px solid rgba(180,200,210,0.25);
+      box-shadow:0 0 25px rgba(0,191,255,0.25);
+      pointer-events:none;
+      z-index:1;
+    }
+
+    .logo video {
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .logo{
+      width:260px;height:110px;
+      border-radius:20px;
+      overflow:hidden;
+      margin-bottom:10px;
+      border:2px solid rgba(169,241,223,0.5);
+      box-shadow:0 0 25px rgba(0,255,255,0.3);
+      transition:all .3s ease;
+      z-index:2;
+    }
+    .logo img{width:100%;height:100%;object-fit:cover;}
+    .logo:hover{transform:scale(1.05);box-shadow:0 0 40px rgba(0,255,255,0.6);}
+
+    h1{
+      font-family:'Orbitron',sans-serif;
+      font-size:28px;
+      margin-bottom:15px;
+      color:#c0c0c0;
+      text-shadow:0 0 20px rgba(0,255,255,0.6);
+      z-index:2;
+    }
+
+    .form{
+      display:none;
+      flex-direction:column;
+      gap:14px;
+      width:100%;
+      max-width:880px;
+      background:var(--panel);
+      padding:25px 22px;
+      border-radius:18px;
+      border:2px solid rgba(100,180,255,0.2);
+      box-shadow:0 0 35px rgba(100,180,255,0.25);
+      margin-top:10px;
+      backdrop-filter:blur(10px);
+      z-index:2;
+      align-self:center;
+    }
+    .form.active{display:flex;}
+    input,select,textarea{
+      width:100%;
+      padding:14px 16px;
+      border-radius:12px;
+      border:2px solid transparent;
+      background:linear-gradient(rgba(20,20,30,0.8),rgba(20,20,30,0.8)) padding-box,
+                 linear-gradient(45deg,var(--neon1),var(--neon2)) border-box;
+      color:var(--text);
+      font-size:15px;
+      outline:none;
+      transition:all .3s ease;
+    }
+    input:focus,select:focus{
+      box-shadow:0 0 20px rgba(100,180,255,0.3);
+      border-color:var(--neon1);
+    }
+
+    .btn{
+      margin-top:10px;
+      padding:14px;
+      border:none;
+      border-radius:12px;
+      background:linear-gradient(45deg,var(--neon1),var(--neon2));
+      color:#0d1b2a;
+      font-weight:700;
+      cursor:pointer;
+      transition:all .25s ease;
+      border:1px solid rgba(100,180,255,0.3);
+    }
+    .btn:hover {transform:translateY(-3px);box-shadow:0 0 25px rgba(100,180,255,0.4);}
+
+    .popup-overlay{
+      position:fixed;inset:0;
+      display:flex;align-items:center;justify-content:center;
+      background:rgba(0,0,0,0.6);
+      backdrop-filter:blur(10px);
+      opacity:0;pointer-events:none;
+      transition:0.3s;
+      z-index:99;
+    }
+    .popup-overlay.active{opacity:1;pointer-events:auto;}
+    .popup-box{
+      background:rgba(15,15,20,0.95);
+      border:2px solid var(--neon2);
+      border-radius:20px;
+      padding:40px 30px;
+      text-align:center;
+      color:var(--neon2);
+      box-shadow:0 0 30px rgba(0,168,204,0.4);
+      font-family:'Orbitron',sans-serif;
+      animation:fadeIn .3s ease;
+    }
+    .popup-box h2{color:var(--neon1);}
+    @keyframes fadeIn{from{transform:scale(0.8);opacity:0}to{transform:scale(1);opacity:1}}
+
+    .bottom-nav{
+      position:fixed;
+      bottom:0;left:50%;transform:translateX(-50%);
+      width:90%;max-width:480px;
+      background:rgba(15,15,20,0.9);
+      border-radius:20px 20px 0 0;
+      box-shadow:0 0 25px rgba(100,180,255,0.3),0 0 40px rgba(0,255,255,0.2);
+      display:flex;justify-content:space-around;align-items:center;
+      padding:12px 0;
+      backdrop-filter:blur(10px);
+      z-index:1000;
+      border-top:2px solid rgba(100,180,255,0.3);
+    }
+    .nav-item{
+      display:flex;flex-direction:column;align-items:center;
+      color:var(--text);
+      font-size:13px;
+      cursor:pointer;
+      transition:0.3s;
+    }
+    .nav-item i{font-size:20px;margin-bottom:5px;transition:0.3s;}
+    .nav-item.active{color:#fff;text-shadow:0 0 10px var(--neon2);}
+    .nav-item.active i{color:var(--neon1);transform:scale(1.2);filter:drop-shadow(0 0 8px var(--neon1));}
+    .nav-item:hover{transform:translateY(-4px);}
+
+    /* Dashboard specific */
+    .dashboard-grid {
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap:18px;
+      align-items:start;
+      width:100%;
+    }
+    .dash-card {
+      background: linear-gradient(180deg, rgba(20,20,30,0.9), rgba(12,12,18,0.85));
+      border-radius:14px;
+      padding:18px;
+      border:1px solid rgba(100,180,255,0.08);
+      box-shadow:0 8px 30px rgba(0,0,0,0.5);
+      text-align:left;
+    }
+    .dash-title { font-weight:700; font-size:14px; margin-bottom:8px; color:var(--neon1); }
+    .status-badge { display:inline-block; padding:6px 10px; border-radius:999px; font-weight:700; font-size:13px; margin-top:6px; }
+
+    .dashboard-footer {
+      margin-top:16px;
+      background: rgba(0,0,0,0.15);
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(0,168,204,0.06);
+    }
+
+    .accounts-table {
+      width:100%;
+      border-collapse:collapse;
+      margin-top:10px;
+      font-size:13px;
+    }
+    .accounts-table th, .accounts-table td {
+      padding:8px 10px;
+      border-bottom:1px dashed rgba(255,255,255,0.04);
+      text-align:left;
+    }
+    .accounts-table th { font-size:12px; color:rgba(180,200,210,0.9); }
+
+    /* Custom Neon Dropdown */
+    .custom-select {
+      position: relative;
+      user-select: none;
+      width: 100%;
+      font-family: 'Poppins', sans-serif;
+      z-index: 3;
+    }
+
+    .select-selected {
+      background: linear-gradient(rgba(20,20,30,0.8), rgba(20,20,30,0.8)) padding-box,
+              linear-gradient(45deg, var(--neon1), var(--neon2)) border-box;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      padding: 14px 16px;
+      color: var(--text);
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 0 12px rgba(0,168,204,0.25);
+    }
+
+    .select-selected:hover {
+      box-shadow: 0 0 20px rgba(0,168,204,0.35);
+    }
+
+    .select-items {
+      position: absolute;
+      top: 110%;
+      left: 0;
+      right: 0;
+      background: rgba(15,15,25,0.98);
+      border: 2px solid var(--neon2);
+      border-radius: 14px;
+      box-shadow: 0 0 25px rgba(0,168,204,0.3);
+      overflow: hidden;
+      display: none;
+      flex-direction: column;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .select-items div {
+      padding: 12px 16px;
+      color: var(--text);
+      cursor: pointer;
+      border-bottom: 1px solid rgba(0,168,204,0.15);
+      transition: 0.2s;
+    }
+
+    .select-items div:hover {
+      background: linear-gradient(45deg, var(--neon1), var(--neon2));
+      color: #000;
+      text-shadow: 0 0 10px #fff;
+    }
+
+    .select-items div:last-child {
+      border-bottom: none;
+    }
+
+    .select-open .select-items {
+      display: flex;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="neon-border"></div>
+
+  <audio id="bgm" autoplay loop muted>
+    <source src="https://files.catbox.moe/7xec5e.m4a" type="audio/mpeg">
+  </audio>
+
+  <div class="logo">
+    <video id="mainLogo" autoplay loop muted playsinline></video>
+  </div>
+  <h1 id="mainTitle">Angkasa Control</h1>
+
+  <!-- Dashboard (default visible untuk opsi A) -->
+  <div class="form active" id="dashboard">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+      <div style="text-align:left;">
+        <div style="font-size:13px;color:rgba(200,220,230,0.8);">Halo, selamat datang di</div>
+        <div style="font-weight:800;font-size:20px;margin-top:6px;color:var(--neon1)">Angkasa Dashboard</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:12px;color:rgba(200,220,230,0.65)">Terakhir update:</div>
+        <div id="dashboardLastUpdate" style="font-weight:700;margin-top:4px;">-</div>
+      </div>
+    </div>
+
+    <div class="dashboard-grid" style="margin-top:14px;">
+      <!-- kiri: status WA -->
+      <div class="dash-card">
+        <div class="dash-title">STATUS WHATSAPP</div>
+        <div id="waStatus" style="font-size:16px;font-weight:700;">
+          Memuat...
+        </div>
+        <div style="margin-top:8px;font-size:13px;color:rgba(200,220,230,0.75);">
+          Status sender whatsapp
+        </div>
+        <div class="dashboard-footer">
+          <div><b>Status aktif:</b> <span id="waClientActive">-</span></div>
+          <div style="margin-top:6px;"><b>Keterangan:</b> <span id="waConnectionState">-</span></div>
+        </div>
+      </div>
+
+      <!-- kanan: jumlah akun -->
+      <div class="dash-card">
+        <div class="dash-title">AKUN TERDAFTAR</div>
+        <div id="totalAccounts" style="font-size:36px;font-weight:900;color:var(--neon2);margin-top:6px;">-</div>
+        <div style="margin-top:10px;font-size:13px;color:rgba(200,220,230,0.75);">
+          Info jumlah akun terdaftar
+        </div>
+        <div class="dashboard-footer">
+          <div><b>Total Akun:</b> <span id="listCount">-</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- bottom: detail akun -->
+    <div style="margin-top:18px;" class="dash-card">
+      <div class="dash-title">DETAIL AKUN & MASA EXPIRED</div>
+      <div style="font-size:13px;color:rgba(200,220,230,0.75);margin-bottom:8px;">
+        Daftar akun dan waktu expired
+      </div>
+      <div style="overflow:auto;max-height:260px;">
+        <table class="accounts-table" id="accountsTable">
+          <thead>
+            <tr><th>Username</th><th>Expired</th></tr>
+          </thead>
+          <tbody id="accountsTbody">
+            <tr><td colspan="2">Memuat...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Attack (tetap ada, diakses lewat Menu) -->
+  <div class="form" id="execute">
+    <input type="tel" id="numberInput" placeholder="Example 62....." />
+
+    <div class="custom-select" id="modeSelectBox">
+      <div class="select-selected">-- Select Menu --</div>
+      <div class="select-items">
+        <div data-value="delay">Delay Invisible</div>
+        <div data-value="blank">Blank Andros</div>
+        <div data-value="medium">Low Delay</div>
+        <div data-value="blank-ios">Blank iOS</div>
+        <div data-value="forClose">For Close</div>
+      </div>
+    </div>
+
+    <button id="executeBtn" class="btn">
+      <i class="fas fa-play"></i> EXECUTE
+    </button>
+  </div>
+
+  <!-- Ganti dari Doxing jadi Cek IP Web -->
+  <div class="form" id="osint">
+    <input type="text" id="osintInput" placeholder="Masukkan domain, contoh: google.com" />
+    <button id="osintBtn" class="btn"><i class="fas fa-globe"></i> CEK IP WEB</button>
+    <div id="osintResult" class="result"></div>
+  </div>
+
+  <div class="form" id="track">
+    <input type="text" id="ipInput" placeholder="Enter IP" />
+    <button id="trackBtn" class="btn"><i class="fas fa-location-arrow"></i> TRACK</button>
+    <div id="ipResult" class="result"></div>
+  </div>
+  
+  <div class="form" id="cekbio">
+    <input type="text" id="cekbioInput" placeholder="Masukkan nomor contoh: 628xxxx" />
+    <button id="cekbioBtn" class="btn"><i class="fas fa-user"></i> CEK BIO</button>
+    <div id="cekbioResult" class="result"></div>
+  </div>
+
+  <!-- Popup sukses -->
+  <div id="popup" class="popup-overlay">
+    <div class="popup-box">
+      <h2><i class="fas fa-check-circle"></i> Success</h2>
+      <p>Bug berhasil dikirim!</p>
+    </div>
+  </div>
+
+  <!-- Popup pilih menu -->
+  <div id="menuPopup" class="popup-overlay">
+    <div class="popup-box" style="max-width:340px;">
+      <h2>Pilih Menu</h2>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:20px;">
+        <button class="btn" onclick="switchMenu('execute')"><i class="fas fa-bomb"></i> Attack</button>
+        <button class="btn" onclick="switchMenu('osint')"><i class="fas fa-globe"></i> Cek IP Web</button>
+        <button class="btn" onclick="switchMenu('track')"><i class="fas fa-location-arrow"></i> IP Tracker</button>
+        <button class="btn" onclick="switchMenu('cekbio')"><i class="fas fa-user"></i> Cek Bio WhatsApp</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item" id="dashboardTrigger"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></div>
+    <div class="nav-item active" id="menuTrigger"><i class="fas fa-bars"></i><span>Menu</span></div>
+    <div class="nav-item" id="logoutTrigger"><i class="fas fa-right-from-bracket"></i><span>Logout</span></div>
+  </div>
+
+  <script>
+    const forms=document.querySelectorAll('.form');
+    const mainLogo=document.getElementById('mainLogo');
+    const mainTitle=document.getElementById('mainTitle');
+    const menuPopup=document.getElementById('menuPopup');
+
+    const logos={
+      default:"https://files.catbox.moe/35ya22.mp4",
+      track:"https://files.catbox.moe/35ya22.mp4",
+      osint:"https://files.catbox.moe/35ya22.mp4"
+    };
+
+    function activateTab(id){
+      forms.forEach(f=>f.classList.remove('active'));
+      const target=document.getElementById(id);
+      if(target)target.classList.add('active');
+
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      if (id === 'dashboard') document.getElementById('dashboardTrigger').classList.add('active');
+      else if (id === 'execute') document.getElementById('menuTrigger').classList.add('active');
+      else document.getElementById('menuTrigger').classList.add('active');
+
+      if(id==='track'){mainLogo.src=logos.track;mainTitle.textContent='Track IP';}
+      else if(id==='osint'){mainLogo.src=logos.osint;mainTitle.textContent='Cek IP Web';}
+      else if(id==='execute'){mainLogo.src=logos.default;mainTitle.textContent='WhatsApp Attack';}
+      else if(id==='dashboard'){mainLogo.src=logos.default;mainTitle.textContent='Dashboard';}
+      else if (id === 'cekbio'){mainLogo.src=logos.default;mainTitle.textContent='Cek Bio WhatsApp';}
+    }
+
+    function showPopup(){
+      const popup=document.getElementById('popup');
+      popup.classList.add('active');
+      setTimeout(()=>popup.classList.remove('active'),2000);
+    }
+
+    const selectBox = document.getElementById('modeSelectBox');
+    const selected = selectBox.querySelector('.select-selected');
+    const items = selectBox.querySelector('.select-items');
+    let selectedValue = '';
+
+    selected.addEventListener('click', () => {
+      selectBox.classList.toggle('select-open');
+    });
+
+    items.querySelectorAll('div').forEach(opt => {
+      opt.addEventListener('click', () => {
+        selected.textContent = opt.textContent;
+        selectedValue = opt.getAttribute('data-value');
+        selectBox.classList.remove('select-open');
+      });
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!selectBox.contains(e.target)) {
+        selectBox.classList.remove('select-open');
+      }
+    });
+
+    document.getElementById('executeBtn').addEventListener('click', () => {
+      const num = document.getElementById('numberInput').value.trim();
+      const mode = selectedValue;
+      if (!num || !mode) return alert('Isi nomor dan pilih mode!');
+      fetch('/execution?mode=' + mode + '&target=' + num)
+        .then(r => r.text()).then(txt => {
+          showPopup();
+        })
+        .catch(err => alert('Gagal: ' + err.message));
+    });
+
+    document.getElementById('osintBtn').addEventListener('click', async () => {
+      const input = document.getElementById('osintInput').value.trim();
+      const resEl = document.getElementById('osintResult');
+      if (!input) return alert('Masukkan domain atau URL!');
+
+      resEl.textContent = 'Mengecek IP...';
+      resEl.style.display = 'block';
+
+      try {
+        const domain = input.replace(/^https?:\/\//, '').split('/')[0];
+        const dnsUrl = "https://dns.google/resolve?name=" + domain + "&type=A";
+
+        const response = await fetch(dnsUrl);
+        const data = await response.json();
+
+        if (data.Answer && data.Answer.length > 0) {
+          const ipList = data.Answer
+            .filter(a => a.type === 1)
+            .map(a => a.data)
+            .join(', ');
+          resEl.innerHTML =
+            "<b>Domain:</b> " + domain + "<br>" +
+            "<b>IP:</b> " + ipList;
+        } else {
+          resEl.textContent = 'Tidak ditemukan.';
+        }
+      } catch (err) {
+        resEl.innerHTML =
+          '<p style="color:red;">Error: ' + err.message + '</p>';
+      }
+    });
+
+    async function trackIP(){
+      const ip=document.getElementById('ipInput').value.trim()||'check';
+      const apiKey='d81e6d0ed0dd48e185643ffa047abc17';
+      const url='https://api.ipgeolocation.io/ipgeo?apiKey='+apiKey+'&ip='+encodeURIComponent(ip);
+      const ipRes=document.getElementById('ipResult');
+      ipRes.style.display='block';ipRes.textContent='Querying...';
+      try{
+        const res=await fetch(url);
+        if(!res.ok)throw new Error('HTTP '+res.status);
+        const data=await res.json();
+        ipRes.innerHTML='<p><b>IP:</b> '+(data.ip||'-')+'</p>'+
+        '<p><b>Negara:</b> '+(data.country_name||'-')+'</p>'+
+        '<p><b>Kota:</b> '+(data.city||'-')+'</p>'+
+        '<p><b>Provinsi:</b> '+(data.state_prov||'-')+'</p>'+
+        '<p><b>ISP:</b> '+(data.isp||'-')+'</p>';
+      }catch(e){
+        ipRes.innerHTML='<p style="color:red;">Gagal melacak IP. ('+e.message+')</p>';
+      }
+    }
+
+    document.getElementById('trackBtn').addEventListener('click',trackIP);
+    
+    document.getElementById('cekbioBtn').addEventListener('click', () => {
+    const num = document.getElementById('cekbioInput').value.trim();
+    const resEl = document.getElementById('cekbioResult');
+
+    if (!num) return alert("Isi nomor yg mau dicek!");
+
+    resEl.innerHTML = "Mengecek bio...";
+
+    fetch(`/api/cekbio?target=${num}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) {
+                resEl.innerHTML = `<span style="color:red;">${data.error}</span>`;
+                return;
+            }
+
+            if (!data.registered) {
+                resEl.innerHTML = `
+                    <b>Nomor:</b> ${data.number}<br>
+                    <span style="color:red;">❌ Tidak terdaftar</span>
+                `;
+                return;
+            }
+
+            resEl.innerHTML = `
+                <b>Nomor:</b> ${data.number}<br>
+                <b>Bio:</b> ${data.bio || "<i>Tidak ada</i>"}<br>
+                <b>Set:</b> ${data.setAt ? new Date(data.setAt).toLocaleString('id-ID') : "-"}<br>
+                <b>Meta Business:</b> ${data.metaBusiness ? "🏢 Ya" : "🚫 Tidak"}<br>
+                <b>Tidak Ngejam:</b> ${data.jamPercentage}%<br>
+            `;
+        })
+        .catch(err => {
+            resEl.innerHTML = `<span style="color:red;">${err.message}</span>`;
+        });
+});
+    
+    document.getElementById('menuTrigger').addEventListener('click',()=>{
+      menuPopup.classList.add('active');
+    });
+    function switchMenu(id){
+      activateTab(id);
+      menuPopup.classList.remove('active');
+    }
+    menuPopup.addEventListener('click',e=>{
+      if(e.target===menuPopup)menuPopup.classList.remove('active');
+    });
+
+    document.getElementById('dashboardTrigger').addEventListener('click', ()=> {
+      activateTab('dashboard');
+      fetchAndRenderDashboard();
+    });
+
+    document.getElementById('logoutTrigger').addEventListener('click', ()=> {
+      window.location.href = '/logout';
+    });
+
+    const waStatusEl = document.getElementById('waStatus');
+    const waClientActiveEl = document.getElementById('waClientActive');
+    const waConnectionStateEl = document.getElementById('waConnectionState');
+    const totalAccountsEl = document.getElementById('totalAccounts');
+    const listCountEl = document.getElementById('listCount');
+    const accountsTbody = document.getElementById('accountsTbody');
+    const dashboardLastUpdate = document.getElementById('dashboardLastUpdate');
+
+    async function fetchAndRenderDashboard(){
+      try {
+        const res = await fetch('/api/dashboard', { credentials: 'same-origin' });
+        if (!res.ok) {
+          if (res.status === 401) {
+            window.location.href = '/login';
+            return;
+          }
+          throw new Error('HTTP ' + res.status);
+        }
+        const data = await res.json();
+        const now = new Date();
+        dashboardLastUpdate.textContent = now.toLocaleString();
+
+        waStatusEl.textContent = data.status || 'closed';
+        waConnectionStateEl.textContent = data.status || 'closed';
+        waClientActiveEl.textContent = (data.status === 'open' ? 'Ya' : 'Tidak');
+
+        totalAccountsEl.textContent = data.totalAccounts ?? 0;
+        listCountEl.textContent = (data.accounts && data.accounts.length) || 0;
+        if (data.accounts && data.accounts.length) {
+          accountsTbody.innerHTML = '';
+          data.accounts.forEach(acc => {
+            const tr = document.createElement('tr');
+            const tdUser = document.createElement('td');
+            tdUser.textContent = acc.username;
+            const tdExp = document.createElement('td');
+            let expText = '-';
+            if (acc.expired) {
+              const d = new Date(Number(acc.expired));
+              expText = d.toLocaleString('id-ID', {
+                timeZone: 'Asia/Jakarta',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+              }) + " WIB";
+            }
+            tdExp.textContent = expText;
+            tr.appendChild(tdUser);
+            tr.appendChild(tdExp);
+            accountsTbody.appendChild(tr);
+          });
+        } else {
+          accountsTbody.innerHTML = '<tr><td colspan="2">Tidak ada akun.</td></tr>';
+        }
+      } catch (err) {
+        console.error('fetchAndRenderDashboard error', err);
+        waStatusEl.textContent = 'error';
+        accountsTbody.innerHTML = '<tr><td colspan="2" style="color:tomato">Gagal memuat dashboard ('+err.message+')</td></tr>';
+      }
+    }
+
+    let dashboardInterval = null;
+    function startDashboardPolling(){
+      if (dashboardInterval) clearInterval(dashboardInterval);
+      fetchAndRenderDashboard();
+      dashboardInterval = setInterval(fetchAndRenderDashboard, 5000);
+    }
+
+    const observer = new MutationObserver(() => {
+      if (document.getElementById('dashboard').classList.contains('active')) {
+        startDashboardPolling();
+      } else {
+        if (dashboardInterval) { clearInterval(dashboardInterval); dashboardInterval = null; }
+      }
+    });
+    observer.observe(document.getElementById('dashboard'), { attributes: true, attributeFilter: ['class'] });
+    activateTab('dashboard');
+    startDashboardPolling();
+    activateTab('dashboard');
+  </script>
+</body>
+</html>
