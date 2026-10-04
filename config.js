@@ -1,6 +1,6 @@
 module.exports = {
     version: "2.0.0",
-    ownerId: 1234567890,
+    ownerId: 7441136575,
     namaBot: "𝚁𝙰𝙵𝙰𝙴𝙻 𝙰𝙿𝙿𝚂",
     usernameOwner: "@bronsew",
     telegramBotToken: "7806483616:AAFsP6eCJw8b3yI92_n0QEhKe0p8KZvY1KA",
