@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rafael Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0a0a0f;
+      font-family: 'Inter', sans-serif;
+      color: #e0e0e0;
+      min-height: 100vh;
+      padding: 20px 16px 100px;
+      position: relative;
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.15), transparent 50%),
+                  radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.1), transparent 50%);
+      pointer-events: none; z-index: 0;
+    }
+    .wrap { max-width: 640px; margin: 0 auto; position: relative; z-index: 1; }
+
+    /* HEADER */
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .user-info { display: flex; align-items: center; gap: 10px; }
+    .avatar {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; color: #fff; font-size: 18px;
+    }
+    .user-name { font-weight: 600; color: #fff; font-size: 15px; }
+    .user-role {
+      font-size: 11px; color: #8b5cf6; text-transform: uppercase;
+      letter-spacing: 1px; font-weight: 600;
+    }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .icon-btn {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #8b5cf6; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: 0.2s;
+    }
+    .icon-btn:hover { background: rgba(139,92,246,0.15); color: #fff; }
+    .icon-btn.playing { color: #10b981; border-color: rgba(16,185,129,0.4); }
+    .logout { color: #ef4444; }
+    .logout:hover { background: rgba(239,68,68,0.15); }
+
+    /* INFO CARD */
+    .info-card {
+      background: rgba(20, 20, 28, 0.75);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 18px; margin-bottom: 16px;
+    }
+    .info-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+    .info-row + .info-row { margin-top: 8px; }
+    .info-label { color: #888; }
+    .info-value { color: #fff; font-weight: 600; }
+    .badge { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+    .badge.active { background: rgba(16,185,129,0.2); color: #10b981; }
+    .badge.expired { background: rgba(239,68,68,0.2); color: #ef4444; }
+    .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+    .status-open { background: #10b981; box-shadow: 0 0 8px #10b981; }
+    .status-closed { background: #ef4444; }
+
+    /* MEDIA BANNER */
+    .media-banner {
+      width: 100%; border-radius: 16px; overflow: hidden;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: #000; min-height: 80px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .media-banner img, .media-banner video { width: 100%; height: auto; display: block; }
+
+    /* MENU */
+    .menu-title {
+      font-size: 12px; color: #888;
+      text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 12px; padding-left: 4px;
+    }
+    .menu-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 12px; margin-bottom: 24px;
+    }
+    .menu-item {
+      background: rgba(20, 20, 28, 0.75);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 20px 16px;
+      cursor: pointer; transition: 0.25s;
+      text-align: left;
+    }
+    .menu-item:hover {
+      border-color: rgba(99, 102, 241, 0.5);
+      background: rgba(99, 102, 241, 0.1);
+      transform: translateY(-2px);
+    }
+    .menu-item i { font-size: 22px; color: #8b5cf6; margin-bottom: 12px; display: block; }
+    .menu-item-name { font-weight: 600; color: #fff; font-size: 14px; margin-bottom: 4px; }
+    .menu-item-desc { font-size: 11px; color: #666; }
+
+    /* PAGE */
+    .page { display: none; }
+    .page.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .card {
+      background: rgba(20, 20, 28, 0.75);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 20px; margin-bottom: 16px;
+    }
+    .card h3 {
+      font-size: 15px; color: #fff;
+      margin-bottom: 14px;
+      font-family: 'Space Grotesk', sans-serif;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .card h3 i { color: #8b5cf6; }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #ccc; font-size: 13px;
+      cursor: pointer; margin-bottom: 16px;
+      transition: 0.2s;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.1); }
+
+    .input-group { position: relative; margin-bottom: 12px; }
+    .input-group i {
+      position: absolute; left: 14px; top: 50%;
+      transform: translateY(-50%);
+      color: #6366f1; font-size: 14px; z-index: 2;
+    }
+    .input-group input, .input-group select {
+      width: 100%;
+      padding: 13px 14px 13px 40px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      color: #fff; font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none; transition: 0.2s;
+    }
+    .input-group input:focus, .input-group select:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    }
+    .input-group select { appearance: none; padding-right: 30px; cursor: pointer; }
+    .input-group select option { background: #1a1a24; color: #fff; }
+
+    .btn {
+      width: 100%; padding: 13px;
+      border: none; border-radius: 10px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff; font-weight: 600;
+      font-size: 14px; cursor: pointer;
+      transition: 0.2s;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(99,102,241,0.4); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    .btn-ghost { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #ccc; }
+
+    .result {
+      margin-top: 14px; padding: 14px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      font-size: 13px; line-height: 1.6;
+      border: 1px solid rgba(255,255,255,0.05);
+      display: none; word-break: break-word;
+    }
+    .result.show { display: block; }
+    .result b { color: #8b5cf6; }
+
+    .sender-list { list-style: none; }
+    .sender-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .sender-item .info { flex: 1; overflow: hidden; }
+    .sender-item .name { color: #fff; font-weight: 600; }
+    .sender-item .jid { color: #666; font-size: 11px; margin-top: 2px; }
+    .sender-item .type {
+      font-size: 10px; padding: 3px 8px;
+      border-radius: 999px; margin-right: 8px;
+      text-transform: uppercase; font-weight: 600;
+    }
+    .type-global { background: rgba(139,92,246,0.2); color: #a78bfa; }
+    .type-private { background: rgba(16,185,129,0.2); color: #10b981; }
+    .type-buyer { background: rgba(245,158,11,0.2); color: #f59e0b; }
+    .btn-delete {
+      width: 32px; height: 32px;
+      background: rgba(239,68,68,0.15);
+      border: none; border-radius: 8px;
+      color: #ef4444; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .empty { text-align: center; color: #555; padding: 20px; font-size: 13px; }
+
+    /* BOTTOM NAV */
+    .bottom-nav {
+      position: fixed; bottom: 12px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(20, 20, 28, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 8px 12px;
+      display: flex; gap: 4px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      z-index: 100;
+    }
+    .nav-btn {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+      padding: 8px 12px;
+      background: transparent; border: none;
+      color: #666; cursor: pointer;
+      border-radius: 12px; transition: 0.2s;
+      font-size: 10px;
+      font-family: 'Inter', sans-serif;
+    }
+    .nav-btn i { font-size: 16px; }
+    .nav-btn.active { background: rgba(99,102,241,0.15); color: #a78bfa; }
+    .nav-btn:hover { color: #a78bfa; }
+
+    /* POPUP */
+    .popup {
+      position: fixed; top: 20px; left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: rgba(20, 20, 28, 0.98);
+      backdrop-filter: blur(10px);
+      padding: 13px 22px; border-radius: 10px;
+      font-size: 14px; opacity: 0;
+      transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 999; border: 1px solid;
+      max-width: 90%; text-align: center;
+    }
+    .popup.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .popup.error { border-color: #ef4444; color: #ef4444; }
+    .popup.success { border-color: #10b981; color: #10b981; }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================
+       LETAK MUSIK: BACKGROUND MUSIC DASHBOARD
+       GANTI src DENGAN URL MUSIK ANDA
+       ============================================ -->
+  <audio id="bgMusic" loop muted autoplay>
+    <source src="https://files.catbox.moe/nrds8a.mp3" type="audio/mpeg">
+  </audio>
+
+  <div class="wrap">
+    <!-- HEADER -->
+    <div class="header">
+      <div class="user-info">
+        <div class="avatar" id="userAvatar">R</div>
+        <div>
+          <div class="user-name" id="userName">Loading...</div>
+          <div class="user-role" id="userRole">-</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="musicToggle" onclick="toggleMusic()" title="Play/Pause Musik">
+          <i class="fas fa-volume-xmark"></i>
+        </button>
+        <button class="icon-btn logout" onclick="window.location.href='/logout'">
+          <i class="fas fa-right-from-bracket"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- PAGE: HOME -->
+    <div class="page active" id="page-home">
+      <div class="media-banner" id="mediaBanner">
+        <div style="padding: 20px; color: #444; font-size: 12px;">Loading media...</div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-row">
+          <span class="info-label">Role</span>
+          <span class="info-value" id="expRole">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Expired</span>
+          <span class="info-value" id="expDate">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Status</span>
+          <span id="expStatus"><span class="badge active">Aktif</span></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Sender Pribadi</span>
+          <span class="info-value" id="expSender">0</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">WA Status</span>
+          <span class="info-value" id="expWaStatus">
+            <span class="status-dot status-closed"></span> Loading...
+          </span>
+        </div>
+      </div>
+
+      <div class="menu-title">Menu Utama</div>
+      <div class="menu-grid" id="menuGrid">
+        <div class="menu-item" onclick="showPage('page-bug')">
+          <i class="fas fa-bomb"></i>
+          <div class="menu-item-name">Attack Bug</div>
+          <div class="menu-item-desc">Kirim bug ke target</div>
+        </div>
+        <div class="menu-item" onclick="showPage('page-cekbio')">
+          <i class="fas fa-user-secret"></i>
+          <div class="menu-item-name">Cek Bio</div>
+          <div class="menu-item-desc">Cek bio WhatsApp</div>
+        </div>
+        <div class="menu-item" onclick="showPage('page-senders')">
+          <i class="fas fa-tower-broadcast"></i>
+          <div class="menu-item-name">Sender</div>
+          <div class="menu-item-desc">Kelola sender</div>
+        </div>
+        <div class="menu-item" onclick="showPage('page-pairing')">
+          <i class="fas fa-link"></i>
+          <div class="menu-item-name">Pairing</div>
+          <div class="menu-item-desc">Hubungkan WhatsApp</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: BUG -->
+    <div class="page" id="page-bug">
+      <button class="back-btn" onclick="showPage('page-home')"><i class="fas fa-arrow-left"></i> Kembali</button>
+      <div class="card">
+        <h3><i class="fas fa-bomb"></i> Attack Bug</h3>
+        <div class="input-group">
+          <i class="fas fa-phone"></i>
+          <input type="tel" id="bugTarget" placeholder="628xxxxxxxxxx" />
+        </div>
+        <div class="input-group">
+          <i class="fas fa-bolt"></i>
+          <select id="bugMode">
+            <option value="">-- Pilih Mode --</option>
+            <option value="delay">Delay Invisible</option>
+            <option value="blank">Blank Andros</option>
+            <option value="medium">Low Delay</option>
+            <option value="blank-ios">Blank iOS</option>
+            <option value="forClose">For Close</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <i class="fas fa-tower-broadcast"></i>
+          <select id="bugSender">
+            <option value="">-- Default Sender --</option>
+          </select>
+        </div>
+        <button class="btn" id="bugExecuteBtn"><i class="fas fa-play"></i> EKSEKUSI</button>
+        <div class="result" id="bugResult"></div>
+      </div>
+    </div>
+
+    <!-- PAGE: CEKBIO -->
+    <div class="page" id="page-cekbio">
+      <button class="back-btn" onclick="showPage('page-home')"><i class="fas fa-arrow-left"></i> Kembali</button>
+      <div class="card">
+        <h3><i class="fas fa-user-secret"></i> Cek Bio WhatsApp</h3>
+        <div class="input-group">
+          <i class="fas fa-phone"></i>
+          <input type="tel" id="cekbioTarget" placeholder="628xxxxxxxxxx" />
+        </div>
+        <button class="btn" id="cekbioBtn">CEK BIO</button>
+        <div class="result" id="cekbioResult"></div>
+      </div>
+    </div>
+
+    <!-- PAGE: SENDERS -->
+    <div class="page" id="page-senders">
+      <button class="back-btn" onclick="showPage('page-home')"><i class="fas fa-arrow-left"></i> Kembali</button>
+
+      <div class="card" id="senderAddCard">
+        <h3><i class="fas fa-plus"></i> Tambah Sender</h3>
+        <div class="input-group">
+          <i class="fas fa-phone"></i>
+          <input type="tel" id="senderJid" placeholder="628xxxxxxxxxx" />
+        </div>
+        <div class="input-group">
+          <i class="fas fa-tag"></i>
+          <input type="text" id="senderName" placeholder="Nama sender (opsional)" />
+        </div>
+        <div class="input-group">
+          <i class="fas fa-list"></i>
+          <select id="senderType">
+            <option value="private">Private (hanya Anda)</option>
+            <option value="global">Global (semua user premium)</option>
+          </select>
+        </div>
+        <button class="btn" id="senderAddBtn">TAMBAH SENDER</button>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-globe"></i> Sender Global</h3>
+        <ul class="sender-list" id="globalSendersList"><li class="empty">Loading...</li></ul>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-user"></i> Sender Pribadi</h3>
+        <ul class="sender-list" id="privateSendersList"><li class="empty">Loading...</li></ul>
+      </div>
+
+      <div class="card" id="buyerSenderCard" style="display:none;">
+        <h3><i class="fas fa-user-friends"></i> Sender dari Reseller</h3>
+        <ul class="sender-list" id="buyerSendersList"><li class="empty">Loading...</li></ul>
+      </div>
+    </div>
+
+    <!-- PAGE: PAIRING -->
+    <div class="page" id="page-pairing">
+      <button class="back-btn" onclick="showPage('page-home')"><i class="fas fa-arrow-left"></i> Kembali</button>
+
+      <div class="card">
+        <h3><i class="fas fa-link"></i> Pairing WhatsApp</h3>
+        <p style="font-size: 12px; color: #888; margin-bottom: 14px;">
+          Masukkan nomor WhatsApp yang mau di-pairing. Anda akan dapat kode 8 digit.
+        </p>
+        <div class="input-group">
+          <i class="fas fa-phone"></i>
+          <input type="tel" id="pairPhone" placeholder="628xxxxxxxxxx" />
+        </div>
+        <div class="input-group">
+          <i class="fas fa-list"></i>
+          <select id="pairType">
+            <option value="private">Private (hanya Anda)</option>
+            <option value="global" id="pairGlobalOption">Global (semua user)</option>
+          </select>
+        </div>
+        <button class="btn" id="pairBtn">MINTA KODE PAIRING</button>
+        <div class="result" id="pairResult"></div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-list"></i> Nomor Terpasang</h3>
+        <ul class="sender-list" id="sessionsList"><li class="empty">Loading...</li></ul>
+      </div>
+    </div>
+
+    <!-- PAGE: MANAGE BUYER -->
+    <div class="page" id="page-buyers">
+      <button class="back-btn" onclick="showPage('page-home')"><i class="fas fa-arrow-left"></i> Kembali</button>
+
+      <div class="card">
+        <h3><i class="fas fa-user-plus"></i> Daftarkan Buyer</h3>
+        <div class="input-group">
+          <i class="fas fa-user"></i>
+          <input type="text" id="buyerUsername" placeholder="Username buyer" />
+        </div>
+        <button class="btn" id="buyerRegisterBtn">DAFTARKAN</button>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-users"></i> Daftar Buyer Anda</h3>
+        <ul class="sender-list" id="buyersList"><li class="empty">Loading...</li></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="nav-btn active" onclick="showPage('page-home')">
+      <i class="fas fa-home"></i><span>Home</span>
+    </button>
+    <button class="nav-btn" onclick="showPage('page-senders')">
+      <i class="fas fa-tower-broadcast"></i><span>Sender</span>
+    </button>
+    <button class="nav-btn" onclick="showPage('page-pairing')">
+      <i class="fas fa-link"></i><span>Pairing</span>
+    </button>
+    <button class="nav-btn" id="navBuyer" onclick="showPage('page-buyers')" style="display:none;">
+      <i class="fas fa-users"></i><span>Buyer</span>
+    </button>
+  </div>
+
+  <div id="popup" class="popup"></div>
+
+  <script>
+    let userData = null;
+    let allSenders = { global: [], private: [], buyerSenders: [] };
+    let musicPlaying = false;
+    const bgMusic = document.getElementById('bgMusic');
+    const musicToggle = document.getElementById('musicToggle');
+
+    // ===== MUSIC =====
+    bgMusic.volume = 0.3;
+    bgMusic.play().catch(() => {});
+    function toggleMusic() {
+      if (musicPlaying) {
+        bgMusic.pause();
+        musicToggle.classList.remove('playing');
+        musicToggle.innerHTML = '<i class="fas fa-volume-xmark"></i>';
+        musicPlaying = false;
+      } else {
+        bgMusic.muted = false;
+        bgMusic.play().then(() => {
+          musicToggle.classList.add('playing');
+          musicToggle.innerHTML = '<i class="fas fa-volume-high"></i>';
+          musicPlaying = true;
+        }).catch(() => {});
+      }
+    }
+    document.addEventListener('click', function autoUnmute() {
+      if (!musicPlaying && bgMusic.paused) {
+        bgMusic.muted = false;
+        bgMusic.play().then(() => {
+          musicToggle.classList.add('playing');
+          musicToggle.innerHTML = '<i class="fas fa-volume-high"></i>';
+          musicPlaying = true;
+        }).catch(() => {});
+      }
+    });
+
+    // ===== NAVIGASI =====
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      window.scrollTo(0, 0);
+      if (id === 'page-senders') loadSenders();
+      if (id === 'page-pairing') loadSessions();
+      if (id === 'page-buyers') loadBuyers();
+    }
+
+    function showPopup(type, text) {
+      const p = document.getElementById('popup');
+      p.textContent = text;
+      p.className = 'popup ' + type + ' show';
+      setTimeout(() => p.classList.remove('show'), 3000);
+    }
+
+    async function loadUser() {
+      try {
+        const r = await fetch('/api/user');
+        if (r.status === 401) { window.location.href = '/login'; return; }
+        userData = await r.json();
+
+        document.getElementById('userName').textContent = userData.username;
+        document.getElementById('userRole').textContent = userData.role;
+        document.getElementById('userAvatar').textContent = userData.username.charAt(0).toUpperCase();
+        document.getElementById('expRole').textContent = userData.role;
+        document.getElementById('expDate').textContent = userData.expiredFormatted;
+
+        const mb = document.getElementById('mediaBanner');
+        if (userData.media && userData.media.url) {
+          if (userData.media.type === 'video') {
+            mb.innerHTML = `<video src="${userData.media.url}" autoplay loop muted playsinline></video>`;
+          } else {
+            mb.innerHTML = `<img src="${userData.media.url}" alt="banner">`;
+          }
+        } else {
+          mb.innerHTML = '<div style="padding:20px;color:#444;font-size:12px;">Tidak ada media</div>';
+        }
+
+        if (userData.canManageBuyer) {
+          document.getElementById('navBuyer').style.display = 'flex';
+          document.getElementById('menuGrid').innerHTML += `
+            <div class="menu-item" onclick="showPage('page-buyers')">
+              <i class="fas fa-users"></i>
+              <div class="menu-item-name">Manage Buyer</div>
+              <div class="menu-item-desc">Kelola buyer Anda</div>
+            </div>
+          `;
+        }
+
+        if (!userData.canPairGlobal) {
+          const opt = document.getElementById('pairGlobalOption');
+          if (opt) opt.remove();
+        }
+        if (!userData.canAddGlobalSender) {
+          document.getElementById('senderType').innerHTML = '<option value="private">Private (hanya Anda)</option>';
+        }
+        if (userData.canBugVIP) {
+          const sel = document.getElementById('bugMode');
+          for (let i = 1; i <= 10; i++) {
+            const opt = document.createElement('option');
+            opt.value = 'vip' + i;
+            opt.textContent = 'VIP Bug ' + i;
+            sel.appendChild(opt);
+          }
+        }
+
+        loadWaStatus();
+        loadSenders();
+      } catch (err) {
+        showPopup('error', err.message);
+      }
+    }
+
+    async function loadWaStatus() {
+      try {
+        const r = await fetch('/api/sessions/status');
+        const d = await r.json();
+        const anyLive = (d.sessions || []).some(s => s.connected);
+        const el = document.getElementById('expWaStatus');
+        if (anyLive) el.innerHTML = '<span class="status-dot status-open"></span> Connected';
+        else el.innerHTML = '<span class="status-dot status-closed"></span> Disconnected';
+      } catch {}
+    }
+
+    async function loadSenders() {
+      try {
+        const r = await fetch('/api/senders');
+        const d = await r.json();
+        allSenders = d;
+
+        const gl = document.getElementById('globalSendersList');
+        if (d.global.length === 0) gl.innerHTML = '<li class="empty">Belum ada sender global</li>';
+        else gl.innerHTML = d.global.map(s => `
+          <li class="sender-item">
+            <div class="info">
+              <div class="name">${s.name}</div>
+              <div class="jid">${s.jid}</div>
+            </div>
+            <span class="type type-global">global</span>
+            ${canDeleteSender(s) ? `<button class="btn-delete" onclick="deleteSender('${s.jid}')"><i class="fas fa-trash"></i></button>` : ''}
+          </li>
+        `).join('');
+
+        const pr = document.getElementById('privateSendersList');
+        if (d.private.length === 0) pr.innerHTML = '<li class="empty">Belum ada sender pribadi</li>';
+        else pr.innerHTML = d.private.map(s => `
+          <li class="sender-item">
+            <div class="info">
+              <div class="name">${s.name}</div>
+              <div class="jid">${s.jid}</div>
+            </div>
+            <span class="type type-private">private</span>
+            <button class="btn-delete" onclick="deleteSender('${s.jid}')"><i class="fas fa-trash"></i></button>
+          </li>
+        `).join('');
+
+        const bs = document.getElementById('buyerSendersList');
+        if (d.buyerSenders && d.buyerSenders.length > 0) {
+          bs.innerHTML = d.buyerSenders.map(jid => `
+            <li class="sender-item">
+              <div class="info">
+                <div class="name">${jid}</div>
+                <div class="jid">dari reseller</div>
+              </div>
+              <span class="type type-buyer">buyer</span>
+            </li>
+          `).join('');
+          document.getElementById('buyerSenderCard').style.display = 'block';
+        } else {
+          document.getElementById('buyerSenderCard').style.display = 'none';
+        }
+
+        const sel = document.getElementById('bugSender');
+        sel.innerHTML = '<option value="">-- Default --</option>';
+        if (userData.canAddGlobalSender) {
+          d.global.forEach(s => sel.innerHTML += `<option value="${s.jid}">[Global] ${s.name}</option>`);
+        }
+        d.private.forEach(s => sel.innerHTML += `<option value="${s.jid}">[Private] ${s.name}</option>`);
+        (d.buyerSenders || []).forEach(jid => sel.innerHTML += `<option value="${jid}">[Buyer] ${jid}</option>`);
+      } catch {}
+    }
+
+    function canDeleteSender(s) {
+      if (!userData) return false;
+      if (userData.role === 'developer' || userData.role === 'owner' || userData.role === 'admin') return true;
+      return s.owner === userData.username;
+    }
+
+    async function deleteSender(jid) {
+      if (!confirm('Hapus sender ini?')) return;
+      try {
+        const r = await fetch('/api/senders/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jid })
+        });
+        const d = await r.json();
+        if (d.error) return showPopup('error', d.error);
+        showPopup('success', 'Sender dihapus');
+        loadSenders();
+      } catch (err) { showPopup('error', err.message); }
+    }
+
+    document.getElementById('senderAddBtn').addEventListener('click', async () => {
+      const jid = document.getElementById('senderJid').value.trim();
+      const name = document.getElementById('senderName').value.trim();
+      const type = document.getElementById('senderType').value;
+      if (!jid) return showPopup('error', 'Isi nomor sender');
+      try {
+        const r = await fetch('/api/senders/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jid, name, type })
+        });
+        const d = await r.json();
+        if (d.error) return showPopup('error', d.error);
+        showPopup('success', 'Sender ditambahkan');
+        document.getElementById('senderJid').value = '';
+        document.getElementById('senderName').value = '';
+        loadSenders();
+      } catch (err) { showPopup('error', err.message); }
+    });
+
+    document.getElementById('bugExecuteBtn').addEventListener('click', async () => {
+      const target = document.getElementById('bugTarget').value.trim();
+      const mode = document.getElementById('bugMode').value;
+      const senderJid = document.getElementById('bugSender').value;
+      if (!target) return showPopup('error', 'Isi target');
+      if (!mode) return showPopup('error', 'Pilih mode');
+
+      const btn = document.getElementById('bugExecuteBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+
+      try {
+        const r = await fetch('/api/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target, mode, senderJid: senderJid || null })
+        });
+        const d = await r.json();
+        if (d.error) showPopup('error', d.error);
+        else showPopup('success', `Terkirim! Cooldown: ${d.cooldown}s`);
+      } catch (err) { showPopup('error', err.message); }
+      finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-play"></i> EKSEKUSI';
+      }
+    });
+
+    document.getElementById('cekbioBtn').addEventListener('click', async () => {
+      const target = document.getElementById('cekbioTarget').value.trim();
+      const el = document.getElementById('cekbioResult');
+      if (!target) return showPopup('error', 'Isi nomor');
+      el.classList.add('show');
+      el.textContent = 'Mengecek...';
+      try {
+        const r = await fetch('/api/cekbio?target=' + target);
+        const d = await r.json();
+        if (d.error) { el.textContent = d.error; return; }
+        if (!d.registered) {
+          el.innerHTML = `<b>Nomor:</b> ${d.number}<br><span style="color:#ef4444">❌ Tidak terdaftar</span>`;
+          return;
+        }
+        el.innerHTML = `
+          <b>Nomor:</b> ${d.number}<br>
+          <b>Bio:</b> ${d.bio || '<i>Tidak ada</i>'}<br>
+          <b>Set:</b> ${d.setAt ? new Date(d.setAt).toLocaleString('id-ID') : '-'}<br>
+          <b>Meta Business:</b> ${d.metaBusiness ? '🏢 Ya' : '🚫 Tidak'}
+        `;
+      } catch (err) { el.textContent = err.message; }
+    });
+
+    document.getElementById('pairBtn').addEventListener('click', async () => {
+      const phone = document.getElementById('pairPhone').value.trim();
+      const type = document.getElementById('pairType').value;
+      const el = document.getElementById('pairResult');
+      if (!phone) return showPopup('error', 'Isi nomor');
+      el.classList.add('show');
+      el.textContent = 'Meminta kode...';
+      try {
+        const r = await fetch('/api/sessions/pair', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone, type })
+        });
+        const d = await r.json();
+        if (d.error) { el.textContent = d.error; return; }
+        el.innerHTML = `<b>Kode Pairing:</b><br>
+          <span style="font-size:24px;color:#a78bfa;letter-spacing:4px;">${d.code}</span><br><br>
+          Masukkan di WhatsApp → Tautkan Perangkat → Tautkan dengan nomor telepon`;
+        setTimeout(loadSessions, 5000);
+      } catch (err) { el.textContent = err.message; }
+    });
+
+    async function loadSessions() {
+      try {
+        const r = await fetch('/api/sessions/status');
+        const d = await r.json();
+        const el = document.getElementById('sessionsList');
+        if (!d.sessions || d.sessions.length === 0) {
+          el.innerHTML = '<li class="empty">Belum ada nomor terpasang</li>';
+          return;
+        }
+        el.innerHTML = d.sessions.map(s => `
+          <li class="sender-item">
+            <div class="info">
+              <div class="name">${s.phone}</div>
+              <div class="jid">${s.connected ? '✅ Connected' : '❌ Disconnected'} • ${s.type} • ${s.order === 1 ? 'Utama' : 'Backup'}</div>
+            </div>
+            <button class="btn-delete" onclick="deleteSession('${s.phone}')"><i class="fas fa-trash"></i></button>
+          </li>
+        `).join('');
+      } catch {}
+    }
+
+    async function deleteSession(phone) {
+      if (!confirm('Hapus nomor ini?')) return;
+      try {
+        const r = await fetch('/api/sessions/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone })
+        });
+        const d = await r.json();
+        if (d.error) return showPopup('error', d.error);
+        showPopup('success', 'Nomor dihapus');
+        loadSessions();
+      } catch (err) { showPopup('error', err.message); }
+    }
+
+    document.getElementById('buyerRegisterBtn').addEventListener('click', async () => {
+      const buyer = document.getElementById('buyerUsername').value.trim();
+      if (!buyer) return showPopup('error', 'Isi username buyer');
+      try {
+        const r = await fetch('/api/buyers/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ buyer })
+        });
+        const d = await r.json();
+        if (d.error) return showPopup('error', d.error);
+        showPopup('success', 'Buyer didaftarkan');
+        document.getElementById('buyerUsername').value = '';
+        loadBuyers();
+      } catch (err) { showPopup('error', err.message); }
+    });
+
+    async function loadBuyers() {
+      try {
+        const r = await fetch('/api/buyers');
+        const d = await r.json();
+        const el = document.getElementById('buyersList');
+        if (!d.buyers || d.buyers.length === 0) {
+          el.innerHTML = '<li class="empty">Belum ada buyer</li>';
+          return;
+        }
+        el.innerHTML = d.buyers.map(b => `
+          <li class="sender-item">
+            <div class="info">
+              <div class="name">${b.buyer}</div>
+              <div class="jid">${(b.senders || []).length} sender</div>
+            </div>
+            <button class="btn-delete" onclick="removeBuyer('${b.buyer}')"><i class="fas fa-trash"></i></button>
+          </li>
+        `).join('');
+      } catch {}
+    }
+
+    async function removeBuyer(buyer) {
+      if (!confirm('Hapus buyer ini?')) return;
+      try {
+        const r = await fetch('/api/buyers/remove', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ buyer })
+        });
+        const d = await r.json();
+        if (d.error) return showPopup('error', d.error);
+        showPopup('success', 'Buyer dihapus');
+        loadBuyers();
+      } catch (err) { showPopup('error', err.message); }
+    }
+
+    // ===== INIT =====
+    loadUser();
+    setInterval(loadWaStatus, 5000);
+    setInterval(() => {
+      if (document.getElementById('page-senders').classList.contains('active')) loadSenders();
+      if (document.getElementById('page-pairing').classList.contains('active')) loadSessions();
+    }, 10000);
+  </script>
+</body>
+</html>
