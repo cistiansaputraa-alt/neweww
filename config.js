@@ -3,7 +3,7 @@ module.exports = {
     ownerId: 7441136575,
     namaBot: "𝚁𝙰𝙵𝙰𝙴𝙻 𝙰𝙿𝙿𝚂",
     usernameOwner: "@bronsew",
-    telegramBotToken: "8990974375:AAHsQYjkmmQ5Gzsb7avbyCfbNmgaZTaJUBA",
+    telegramBotToken: "8990974375:AAEspWjAR2hMZuDD9Q9hDplMnX6N1fbhtQM",
     sessionName: "session",
     portVps: process.env.PORT || "1314",
     ipVps: "http://43.156.227.206:1314",
